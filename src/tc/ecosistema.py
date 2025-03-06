@@ -156,22 +156,43 @@ class Ecosistema:
 
         print(f"\n🔹 **Ciclo {self.ciclos + 1}:**")
         self.imprimir_matriz()
-        for x in range(self.n):
-            for y in range(self.n):
-                organismo = self.matriz[x][y]
-                if isinstance(organismo, (Depredador, Presa)):
-                    organismo.mover(self, x, y)
-                    organismo.comer(self, x, y)
-                    organismo.energia -= 1
-                    organismo.morir(self, x, y)
+        self.procesar_celdas(0, 0)
 
         self.ciclos += 1
         return self.ejecutar_ciclo()
 
-    def verificar_extincion(self):
-        return not any(isinstance(cell, (Depredador, Presa)) for row in self.matriz for cell in row)
+    def procesar_celdas(self, x, y):
+        if x == self.n:
+            return
 
-    def imprimir_matriz(self):
+        if y == self.n:
+            return self.procesar_celdas(x + 1, 0)
+
+        organismo = self.matriz[x][y]
+        if isinstance(organismo, (Depredador, Presa)):
+            organismo.mover(self, x, y)
+            organismo.comer(self, x, y)
+            organismo.energia -= 1
+            organismo.morir(self, x, y)
+
+        return self.procesar_celdas(x, y + 1)
+
+    def verificar_extincion(self, fila=0, col=0):
+        if fila == self.n:
+            return True
+        
+        if col == self.n:
+            return self.verificar_extincion(fila + 1, 0)
+        
+        if isinstance(self.matriz[fila][col], (Depredador, Presa)):
+            return False
+        
+        return self.verificar_extincion(fila, col + 1)
+
+    def imprimir_matriz(self, fila=0):
+        if fila == self.n:
+            return
+        
         simbolos = {Depredador: "D", Presa: "P", Planta: "*", int: "."}
-        for fila in self.matriz:
-            print(" ".join(simbolos.get(type(celda), ".") for celda in fila))
+        print(" ".join(simbolos.get(type(celda), ".") for celda in 		self.matriz[fila]))
+        self.imprimir_matriz(fila + 1)
